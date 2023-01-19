@@ -49,18 +49,16 @@ public class BatchConfiguration {
 
 		log.debug("jdbcCursorItemReader");
 
-		StringBuffer sql = new StringBuffer();
-
-		sql.append("select b.aptcd, a.orgaptcd, a.dongho, a.occu_date, a.rel, a.name, a.mobile_tel_no1 \n" +
+		String sql = "select b.aptcd, a.orgaptcd, a.dongho, a.occu_date, a.rel, a.name, a.mobile_tel_no1 \n" +
 				"from resident a, apt b \n" +
-				"where a.orgaptcd = b.orgaptcd");
+				"where a.orgaptcd = b.orgaptcd";
 
 		return new JdbcCursorItemReaderBuilder<ResidentVo>()
 				.name("jdbcCursorItemReader")   //reader name
 				.fetchSize(chunkSize)
 				.dataSource(dataSource)
 				.rowMapper(new BeanPropertyRowMapper<>(ResidentVo.class))
-				.sql(sql.toString())
+				.sql(sql)
 				.build();
 	}
 
@@ -87,9 +85,10 @@ public class BatchConfiguration {
 	}
 
 	@Bean
-	public Job importUserJob() {
+	public Job importUserJob(JobCompletionNotificationListener listener) {
 		return jobBuilderFactory.get("importUserJob")
 			.incrementer(new RunIdIncrementer())
+			.listener(listener)
 			.flow(step1())
 			.end()
 			.build();
